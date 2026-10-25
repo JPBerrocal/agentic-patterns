@@ -62,7 +62,7 @@ export async function getMessageFromModelFailSafe() {
         console.log('  → ¿Copiaste la key completa, sin espacios ni comillas?');
         console.log(
           '  → ¿El nombre de la variable coincide con el que espera el proveedor?\n',
-          '   → GROQ_API_KEY='.blue,
+          '   → ANTHROPIC_API_KEY='.blue,
         );
         break;
 
