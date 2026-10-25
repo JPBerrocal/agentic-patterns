@@ -26,5 +26,6 @@
     "ai": "^7.0.59",
     "ollama-ai-provider-v2": "^4.0.1",
     "zod": "^4.4.3"
-  }
+  },
+  "packageManager": "pnpm@12.15.0"
 }
