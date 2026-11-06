@@ -99,7 +99,7 @@ const findCourses = tool({
       .string()
       .optional()
       .describe("Texto a buscar en el titulo del curso."),
-    level: z.enum(["basic", "intermediate", "advanced"]),
+    level: z.enum(["basic", "intermediate", "advanced"]).optional(),
   }),
   execute: async ({ text, level }) => {
     const filteredCourses = COURSE_CATALOG.filter((course) => {
@@ -117,10 +117,40 @@ const findCourses = tool({
   },
 });
 
+const withTools = async (): Promise<{
+  steps: number;
+  totalTokens: number;
+}> => {
+  const tracer = createTracer("con-herramientas");
+  const { text } = await generateText({
+    model,
+    prompt: QUESTION,
+    tools: {
+      findCourses,
+    },
+    stopWhen: stepCountIs(6),
+    instructions:
+      "Eres un asistente del catalogo de cursos de devtalles." +
+      "No inventes precios, duraciones ni nombres de cursos." +
+      "Consultalos siempre con las herramientas disponibles.",
+    onStepEnd: tracer.onStepFinish,
+  });
+
+  console.log("\n Respuesta: ", text.green);
+  console.log("\nVerificarlos numeros contra el catalogo de cursos.");
+
+  return tracer.summary();
+};
+
 export const toolUseMain = async (): Promise<void> => {
   const resultA = await withoutTools();
+  console.log(
+    "\n*********************************************************************************\n",
+  );
+  const resultB = await withTools();
   console.log("\n ==== Comparativa ====");
   console.table({
     "Sin herramientas ": resultA,
+    "Con herramientas": resultB,
   });
 };
