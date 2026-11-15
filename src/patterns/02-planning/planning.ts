@@ -100,7 +100,7 @@ const HEROES: Hero[] = [
   { alias: "Green Lantern", specialty: "luz", availableHours: 4 },
   { alias: "Iron Man", specialty: "tecnología", availableHours: 5 },
   { alias: "Jean Grey", specialty: "telequinesis", availableHours: 3 },
-  { alias: "Superman", specialty: "fuego|luz", availableHours: 2 },
+  //{ alias: "Superman", specialty: "fuego|luz", availableHours: 2 },
 ];
 
 const SCENARIO_AS_TEXT = [
@@ -194,20 +194,58 @@ async function withoutPlanning() {
 // ---------------------------------------------------------------------------
 // B) CON PLANIFICACIÓN — primero el plan, luego la ejecución
 // ---------------------------------------------------------------------------
-// TODO:
+
+const planSchema = z.object({
+  steps: z
+    .array(
+      z.object({
+        goal: z.string().describe("Que resuleve este paso, en una frase."),
+        reason: z
+          .string()
+          .describe("Porque es necesario? y Porque va en esta posicion?"),
+      }),
+    )
+    .min(2)
+    .max(5)
+    .describe("Pasos ordenados. Cada paso resuelve una sola cosa."),
+});
+
+async function buildPlan(tracer: ReturnType<typeof createTracer>) {
+  const { output } = await generateText({
+    model,
+    output: Output.object({
+      schema: planSchema,
+    }),
+    prompt: MISSION,
+    instructions:
+      "Eres un estratega. No resulevas el operativo todavia, responde solo en español. Solo descomponlo en pasos, donde cada paso dependa del resultado anterior.",
+    onStepEnd: tracer.onStepFinish,
+  });
+
+  return output.steps;
+}
+
+async function withPlanning() {
+  console.log("========= B) Con planificacion =======".blue);
+  const tracer = createTracer("con-planificacion");
+
+  //Fase 1: Planificacion y construir el plan.
+  const steps = await buildPlan(tracer);
+  console.log("Steps".red, steps);
+}
 
 // ---------------------------------------------------------------------------
 // MAIN
 // ---------------------------------------------------------------------------
 // TODO:
 export async function planningMain() {
-  const a = await withoutPlanning();
-  // const b = await withPlanning();
+  //const a = await withoutPlanning();
+  const b = await withPlanning();
 
   console.log("\n═══ COMPARATIVA ═══\n".blue);
   console.table({
-    "Sin planificación": a,
-    // 'Con planificación': b,
+    //"Sin planificación": a,
+    "Con planificación": b,
   });
 
   console.log(
