@@ -100,7 +100,7 @@ const HEROES: Hero[] = [
   { alias: "Green Lantern", specialty: "luz", availableHours: 4 },
   { alias: "Iron Man", specialty: "tecnología", availableHours: 5 },
   { alias: "Jean Grey", specialty: "telequinesis", availableHours: 3 },
-  //{ alias: "Superman", specialty: "fuego|luz", availableHours: 2 },
+  { alias: "Superman", specialty: "fuego|luz", availableHours: 2 },
 ];
 
 const SCENARIO_AS_TEXT = [
@@ -206,7 +206,7 @@ const planSchema = z.object({
       }),
     )
     .min(2)
-    .max(5)
+    .max(15)
     .describe("Pasos ordenados. Cada paso resuelve una sola cosa."),
 });
 
@@ -232,6 +232,41 @@ async function withPlanning() {
   //Fase 1: Planificacion y construir el plan.
   const steps = await buildPlan(tracer);
   console.log("Steps".red, steps);
+
+  //Fase 2 ejecutar paso por paso
+  const findings: string[] = [];
+
+  for (const [index, step] of steps.entries()) {
+    console.log(`\n ----> Ejecuntando paso ${index + 1}: ${step.goal}`.blue);
+
+    const { text } = await generateText({
+      model,
+      instructions:
+        "Resuelve unicamente el paso indicado. No te adelantes a los siguientes pasos ni des el operativo final.",
+      prompt:
+        `Mission original: ${MISSION} \n\n` +
+        (findings.length
+          ? `Resuelto hasta ahora: ${findings.join("\n-----\n")}\n\n`
+          : "" + `Paso actual: ${step.goal}`),
+      onStepEnd: tracer.onStepFinish,
+    });
+
+    findings.push(`[${step.goal}]\n ${text.trim()}`);
+  }
+  //fase 3: Sintetizar e integrar todos los pasos anteriores =================
+
+  const { text: finalPlan } = await generateText({
+    model,
+    instructions:
+      "Integra los resultados en un operativo final, se concreto en el orden de intervencion y de prioridades.",
+    prompt:
+      `MISSION: \n${MISSION} \n\n` +
+      `RESULTADOS PARCIALES: \n ${findings.join("\n---\n")}`,
+    onStepEnd: tracer.onStepFinish,
+  });
+
+  console.log("\n\nOperativo final: ", finalPlan.green);
+  return tracer.summary();
 }
 
 // ---------------------------------------------------------------------------
