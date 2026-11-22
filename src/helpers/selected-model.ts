@@ -18,8 +18,9 @@ import { ollama } from "ollama-ai-provider-v2";
 
 // Ollama:
 //export const model = ollama("gpt-oss:20b");
-export const model = ollama("qwen3-coder-32k");
+//export const model = ollama("qwen3-coder-32k");
 //export const model = ollama("qwen3.6:35b-a3b");
+export const model = ollama("gemma4:12b");
 
 /*
 Probar estos
