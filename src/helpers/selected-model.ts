@@ -14,13 +14,13 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { ollama } from "ollama-ai-provider-v2";
 
 // Anthropic:
-//export const model = anthropic("claude-haiku-4-5");
+export const model = anthropic("claude-haiku-4-5");
 
 // Ollama:
 //export const model = ollama("gpt-oss:20b");
 //export const model = ollama("qwen3-coder-32k");
 //export const model = ollama("qwen3.6:35b-a3b");
-export const model = ollama("gemma4:12b");
+//export const model = ollama("gemma4:12b");
 
 /*
 Probar estos

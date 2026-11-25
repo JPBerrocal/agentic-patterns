@@ -14,7 +14,7 @@
  * aunque el modelo se haya dado el visto bueno a sí mismo.
  */
 
-import { generateText, Output } from "ai";
+import { generateText, getChunkTimeoutMs, Output } from "ai";
 import { z } from "zod";
 
 import { createTracer, model } from "../../helpers/index.js";
@@ -107,9 +107,17 @@ async function withoutReflection() {
   console.log("\n═══ A) SIN REFLEXIÓN ═══\n".blue);
   const tracer = createTracer("sin-reflexión");
 
-  // TODO:
+  const { text } = await generateText({
+    model,
+    prompt: TASK,
+    onStepEnd: tracer.onStepFinish,
+  });
 
-  return { ...tracer.summary() }; // score
+  console.log(text.green);
+  console.log("\n Auditoria: \n");
+  const score = printAudit(auditBriefing(text));
+
+  return { ...tracer.summary(), score }; // score
 }
 
 // ---------------------------------------------------------------------------
